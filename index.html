@@ -1,0 +1,1511 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>IEM 360° Showcase</title>
+  <meta name="description" content="以 360° 拖曳旋轉檢視精選入耳式監聽耳機的 3D 模型與規格。">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    /* ============================================================
+       1. CSS 變數（深色 / 淺色）
+       ============================================================ */
+    :root {
+      --bg: #0e0f12;
+      --surface: #1a1c21;
+      --surface-2: #23262c;
+      --text: #e8e6e1;
+      --muted: #8a8d94;
+      --line: rgba(232, 230, 225, 0.09);
+      --accent: #9fd3ea;                 /* 依型號動態替換 */
+      --accent-text: var(--accent);
+      --on-accent: #0e0f12;
+      --shadow-alpha: 0.55;
+      --header-h: 64px;
+      --font: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+      --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      --ease: cubic-bezier(.2, .7, .2, 1);
+      color-scheme: dark;
+    }
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg: #f4f3ef;
+        --surface: #ffffff;
+        --surface-2: #ebeae5;
+        --text: #1d1d1f;
+        --muted: #6b6e75;
+        --line: rgba(29, 29, 31, 0.1);
+        --shadow-alpha: 0.32;
+        --accent-text: color-mix(in srgb, var(--accent) 45%, #1d1d1f);
+        color-scheme: light;
+      }
+    }
+
+    /* ============================================================
+       2. 版面：header / main grid
+       ============================================================ */
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { margin: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font: 400 15px/1.65 var(--font);
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
+    button { font: inherit; color: inherit; }
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+    header {
+      height: var(--header-h);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 0 24px;
+      border-bottom: 1px solid var(--line);
+    }
+    .brand-mark { display: flex; align-items: baseline; gap: 12px; min-width: 0; }
+    .brand-mark h1 { margin: 0; font-size: 19px; font-weight: 600; letter-spacing: .01em; white-space: nowrap; }
+    .brand-mark h1 span { color: var(--accent-text); transition: color .4s var(--ease); }
+    .brand-mark p { margin: 0; color: var(--muted); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .kbd-help { color: var(--muted); font-size: 12px; white-space: nowrap; }
+    kbd {
+      font: 500 11px/1 var(--mono);
+      padding: 3px 5px;
+      border: 1px solid var(--line);
+      border-bottom-width: 2px;
+      border-radius: 4px;
+      background: var(--surface);
+      color: var(--text);
+    }
+
+    main {
+      display: grid;
+      grid-template-columns: 220px 1fr 300px;
+      height: calc(100vh - var(--header-h));
+      height: calc(100dvh - var(--header-h));
+      min-height: 480px;
+    }
+
+    /* ============================================================
+       3. 型號卡片、規格面板、控制按鈕
+       ============================================================ */
+    #model-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 16px 12px;
+      border-right: 1px solid var(--line);
+      overflow-y: auto;
+    }
+    .list-title { margin: 4px 8px 8px; font-size: 12px; color: var(--muted); font-weight: 400; }
+    .model-card {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: start;
+      gap: 2px 8px;
+      width: 100%;
+      text-align: left;
+      padding: 12px 14px 12px 16px;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background .2s, border-color .2s;
+    }
+    .model-card::before {
+      content: "";
+      position: absolute;
+      left: 0; top: 14px; bottom: 14px;
+      width: 3px;
+      border-radius: 3px;
+      background: var(--card-accent);
+      opacity: 0;
+      transition: opacity .2s;
+    }
+    .model-card:hover { background: var(--surface); }
+    .model-card[aria-pressed="true"] { background: var(--surface); border-color: var(--line); }
+    .model-card[aria-pressed="true"]::before { opacity: 1; }
+    .model-card .m-brand { font-size: 12px; color: var(--muted); }
+    .model-card .m-name { grid-column: 1; font-weight: 600; font-size: 15px; line-height: 1.35; }
+    .model-card .m-arch { grid-column: 1; font-size: 12px; color: var(--muted); }
+    .model-card kbd { grid-column: 2; grid-row: 1; align-self: start; }
+
+    #viewer {
+      position: relative;
+      min-height: 480px;
+      overflow: hidden;
+      background: var(--bg);
+    }
+    #scene {
+      display: block;
+      width: 100%;
+      height: 100%;
+      touch-action: none;
+      cursor: grab;
+      outline: none;
+    }
+    #scene.dragging { cursor: grabbing; }
+
+    #controls[hidden], #hint[hidden] { display: none; }
+    #controls {
+      position: absolute;
+      left: 0; right: 0;
+      bottom: 18px;
+      margin: 0 auto;
+      width: max-content;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px;
+      border-radius: 14px;
+      background: color-mix(in srgb, var(--surface) 82%, transparent);
+      border: 1px solid var(--line);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      max-width: calc(100% - 24px);
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .ctl {
+      border: 0;
+      background: transparent;
+      padding: 7px 11px;
+      border-radius: 9px;
+      font-size: 13px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background .15s;
+    }
+    .ctl:hover { background: var(--surface-2); }
+    .ctl-sep { width: 1px; height: 20px; background: var(--line); margin: 0 2px; }
+    .toggle { display: inline-flex; align-items: center; gap: 8px; }
+    .toggle .track {
+      width: 28px; height: 16px; border-radius: 8px;
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      position: relative;
+      transition: background .2s;
+    }
+    .toggle .track::after {
+      content: ""; position: absolute; top: 2px; left: 2px;
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--muted);
+      transition: transform .2s var(--ease), background .2s;
+    }
+    .toggle[aria-pressed="true"] .track { background: var(--accent); border-color: transparent; }
+    .toggle[aria-pressed="true"] .track::after { transform: translateX(12px); background: var(--on-accent); }
+
+    #hint {
+      position: absolute;
+      left: 0; right: 0;
+      bottom: 76px;
+      text-align: center;
+      font-size: 13px;
+      color: var(--muted);
+      pointer-events: none;
+      transition: opacity .6s;
+      white-space: nowrap;
+    }
+    #hint.hidden { opacity: 0; }
+
+    #spec-panel {
+      border-left: 1px solid var(--line);
+      padding: 28px 24px;
+      overflow-y: auto;
+    }
+    .spec-inner { animation: specIn .35s var(--ease); }
+    @keyframes specIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+    .spec-brand { margin: 0; color: var(--muted); font-size: 13px; }
+    .spec-name { margin: 2px 0 12px; font-size: 26px; line-height: 1.25; font-weight: 600; }
+    .spec-desc { margin: 0 0 22px; color: var(--text); }
+    .specs { margin: 0; display: grid; grid-template-columns: auto 1fr; border-top: 1px solid var(--line); }
+    .specs dt, .specs dd { padding: 10px 0; border-bottom: 1px solid var(--line); margin: 0; }
+    .specs dt { color: var(--muted); font-size: 13px; padding-right: 16px; white-space: nowrap; }
+    .specs dd { font: 400 13px/1.6 var(--mono); }
+    .specs dd.pending { color: var(--muted); }
+    .specs dd.pending::after {
+      content: "官方未提供";
+      font: 400 11px/1 var(--font);
+      margin-left: 8px;
+      padding: 2px 6px;
+      border: 1px dashed var(--line);
+      border-radius: 4px;
+    }
+    .variants { margin-top: 24px; }
+    .variants h3 { margin: 0 0 10px; font-size: 13px; font-weight: 400; color: var(--muted); }
+    .swatches { display: flex; gap: 10px; flex-wrap: wrap; }
+    .swatch {
+      display: flex; align-items: center; gap: 8px;
+      padding: 5px 10px 5px 5px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: transparent;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .swatch i {
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--sw);
+      box-shadow: inset 0 0 0 1px rgba(127,127,127,.35);
+    }
+    .swatch[aria-pressed="true"] { border-color: var(--accent); background: var(--surface); }
+    .spec-note { margin: 24px 0 0; font-size: 12px; color: var(--muted); line-height: 1.6; }
+    .spec-source { display: inline-block; margin-top: 10px; font-size: 13px; color: var(--text); text-underline-offset: 3px; text-decoration-color: var(--accent); }
+
+    /* ============================================================
+       4. 載入進度、提示、錯誤訊息
+       ============================================================ */
+    .overlay {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      pointer-events: none;
+    }
+    .overlay[hidden] { display: none; }
+    #loader .box { text-align: center; width: 180px; }
+    #loader .pct { font: 500 22px/1 var(--mono); }
+    #loader .label { font-size: 12px; color: var(--muted); margin: 8px 0 10px; }
+    #loader .bar { height: 2px; background: var(--line); border-radius: 2px; overflow: hidden; }
+    #loader .bar i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .2s; }
+
+    .message {
+      pointer-events: auto;
+      max-width: 380px;
+      margin: 24px;
+      padding: 22px;
+      border-radius: 14px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      text-align: center;
+    }
+    .message h2 { margin: 0 0 6px; font-size: 17px; font-weight: 600; }
+    .message p { margin: 0 0 14px; color: var(--muted); font-size: 13px; }
+    .message svg { width: 180px; height: auto; margin: 0 auto 12px; display: block; }
+    .btn-primary {
+      border: 0;
+      padding: 8px 18px;
+      border-radius: 9px;
+      background: var(--accent);
+      color: var(--on-accent);
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* ============================================================
+       5. 響應式斷點與 reduced-motion
+       ============================================================ */
+    @media (max-width: 1100px) {
+      .kbd-help { display: none; }
+    }
+    @media (max-width: 899px) {
+      header { padding: 0 16px; }
+      .brand-mark p { display: none; }
+      main { display: flex; flex-direction: column; height: auto; min-height: 0; }
+      #model-list {
+        flex-direction: row;
+        overflow-x: auto;
+        overflow-y: hidden;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+        padding: 12px;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: none;
+      }
+      #model-list::-webkit-scrollbar { display: none; }
+      .list-title { display: none; }
+      .model-card { flex: 0 0 auto; width: 210px; scroll-snap-align: start; border-color: var(--line); }
+      .model-card kbd { display: none; }
+      #viewer { height: 55vh; min-height: 300px; }
+      #controls { bottom: 10px; }
+      #hint { bottom: 104px; }
+      #spec-panel { border-left: 0; padding: 24px 16px 40px; }
+      .spec-name { font-size: 22px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+    }
+  </style>
+
+  <script type="importmap">
+  { "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  } }
+  </script>
+</head>
+<body>
+  <header>
+    <div class="brand-mark">
+      <h1>IEM <span>360°</span></h1>
+      <p>拖曳旋轉，看清每一隻耳機的腔體、出音管與接口</p>
+    </div>
+    <div class="kbd-help" aria-hidden="true">
+      <kbd>←</kbd><kbd>→</kbd><kbd>↑</kbd><kbd>↓</kbd> 旋轉　
+      <kbd>+</kbd><kbd>−</kbd> 縮放　
+      <kbd>R</kbd> 重置　
+      <kbd>1</kbd>–<kbd>3</kbd> 切換型號
+    </div>
+  </header>
+
+  <main>
+    <nav id="model-list" aria-label="耳機型號"></nav>
+
+    <section id="viewer" aria-label="3D 檢視區">
+      <canvas id="scene" role="img" aria-label="耳機 3D 模型" tabindex="-1"></canvas>
+
+      <div id="hint">拖曳以旋轉，滾輪或雙指縮放</div>
+
+      <div id="loader" class="overlay" aria-live="polite">
+        <div class="box">
+          <div class="pct">0%</div>
+          <div class="label">正在載入 3D 引擎</div>
+          <div class="bar"><i></i></div>
+        </div>
+      </div>
+
+      <div id="error" class="overlay" hidden>
+        <div class="message" role="alert">
+          <div class="error-art"></div>
+          <h2 class="error-title"></h2>
+          <p class="error-text"></p>
+          <button type="button" class="btn-primary error-action"></button>
+        </div>
+      </div>
+
+      <div id="controls" role="toolbar" aria-label="視角控制">
+        <button type="button" class="ctl" data-view="front">正面</button>
+        <button type="button" class="ctl" data-view="side">側面</button>
+        <button type="button" class="ctl" data-view="nozzle">出音管</button>
+        <button type="button" class="ctl" data-view="pins" id="pins-btn">插針</button>
+        <span class="ctl-sep" aria-hidden="true"></span>
+        <button type="button" class="ctl" id="reset-btn">重置視角</button>
+        <button type="button" class="ctl toggle" id="autorotate-btn" aria-pressed="true">
+          <span class="track" aria-hidden="true"></span>自動旋轉
+        </button>
+      </div>
+    </section>
+
+    <aside id="spec-panel" aria-live="polite"></aside>
+  </main>
+
+  <!-- 若 Three.js 因網路問題無法載入，8 秒後顯示提示 -->
+  <script>
+    setTimeout(function () {
+      if (window.__iemBooted) return;
+      var loader = document.getElementById('loader');
+      var err = document.getElementById('error');
+      if (loader) loader.hidden = true;
+      if (!err) return;
+      err.querySelector('.error-title').textContent = '3D 引擎沒有載入';
+      err.querySelector('.error-text').textContent = '頁面需要連網從 jsDelivr 下載 Three.js。請確認網路連線後重新整理。';
+      var btn = err.querySelector('.error-action');
+      btn.textContent = '重新整理';
+      btn.onclick = function () { location.reload(); };
+      err.hidden = false;
+    }, 8000);
+  </script>
+
+  <script type="module">
+    // ============================================================
+    // 1. import Three.js 與 addons
+    // ============================================================
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+    window.__iemBooted = true;
+
+    // ============================================================
+    // 2. IEM_DATA
+    // ============================================================
+    const PENDING = '待確認';
+
+    const IEM_DATA = [
+      {
+        id: 'dita-project-m2',
+        name: 'Project M2',
+        brand: 'DITA Audio',
+        arch: '單動圈',
+        builder: 'dita-project-m2',
+        accent: '#9fd3ea',
+        specs: {
+          driver: '1DD（PM1.8Ti 8.3 mm 碳化鈦振膜，雙 N45 磁鐵）',
+          impedance: PENDING,
+          sensitivity: PENDING,
+          connector: '可換 3.5 / 4.4 mm 插頭',
+          price: 'US$329',
+          material: 'Icy Blue 透明慢灌樹脂，內含不鏽鋼內框'
+        },
+        description: '透明冰藍樹脂包覆不鏽鋼內框的單動圈耳機。',
+        source: 'https://bloomaudio.com/products/dita-audio-project-m2',
+        variants: [
+          { label: 'Icy Blue', colors: { shell: '#bfe3f2' } },
+          { label: '透明（示意）', colors: { shell: '#eef3f5' } },
+          { label: '煙燻灰（示意）', colors: { shell: '#8f969d' } }
+        ],
+        viewPresets: {
+          front:  [0.95, 0.45, -2.25],
+          side:   [-2.45, 0.35, 0.25],
+          nozzle: [1.15, 0.35, 2.15],
+          pins:   [-0.35, 2.2, -0.9]
+        }
+      },
+      {
+        id: 'sony-ier-m9',
+        name: 'IER-M9',
+        brand: 'Sony',
+        arch: '五動鐵',
+        builder: 'sony-ier-m9',
+        accent: '#c8a96e',
+        specs: {
+          driver: '5BA（1 低、2 中、2 高，含鎂振膜超高音）',
+          impedance: '20 Ω（@1 kHz）',
+          sensitivity: '103 dB/mW',
+          connector: 'MMCX 可拆，附 3.5 mm 與 4.4 mm 線各一條（1.2 m）',
+          price: 'US$1,499（上市定價）',
+          material: '鎂合金外殼與內殼，約 11 g，預塑形耳掛'
+        },
+        description: '五顆平衡電樞的舞台監聽耳機，鎂合金腔體搭配預塑形耳掛。',
+        source: 'https://hifi.fan/sony-ier-m9/about',
+        variants: [
+          { label: '原廠黑', colors: { shell: '#2b2b2e', face: '#2b2b2e' } },
+          { label: '石墨灰（示意）', colors: { shell: '#45474d', face: '#5a5d63' } },
+          { label: '香檳面板（示意）', colors: { shell: '#2b2b2e', face: '#b39b72' } }
+        ],
+        viewPresets: {
+          front:  [1.0, 0.45, -2.2],
+          side:   [2.45, 0.3, 0.3],
+          nozzle: [1.2, 0.2, 2.1],
+          pins:   [0.7, 2.15, 0.9]
+        }
+      },
+      {
+        id: 'akg-k3003',
+        name: 'K3003',
+        brand: 'AKG',
+        arch: '一圈二鐵',
+        builder: 'akg-k3003',
+        accent: '#cfd4db',
+        specs: {
+          driver: '1DD + 2BA（三分頻）',
+          impedance: '8 Ω',
+          sensitivity: '125 dB（官方未註明單位）',
+          connector: '固定線 1.2 m，3.5 mm',
+          price: PENDING,
+          material: '髮絲紋不鏽鋼圓筒，10 g，三種可換調音濾網'
+        },
+        description: '不鏽鋼圓筒裡塞進一動圈兩動鐵，靠換濾網調整聲音走向。',
+        source: 'https://support.harmanaudio.com/headphones/headphones-in-ear-grp/headphones-in-ear/K3003_.html',
+        pinsLabel: '出線處',
+        variants: [
+          { label: '髮絲鋼', colors: { body: '#c9ccd1' } },
+          { label: '黑鉻（示意）', colors: { body: '#55575c' } },
+          { label: '香檳金（示意）', colors: { body: '#cdb68c' } }
+        ],
+        viewPresets: {
+          front:  [1.7, 0.7, -1.6],
+          side:   [2.45, 0.25, 0.1],
+          nozzle: [0.9, 0.45, 2.25],
+          pins:   [1.0, -0.6, -2.2]
+        }
+      }
+    ];
+    const DATA_BY_ID = new Map(IEM_DATA.map(d => [d.id, d]));
+
+    const SPEC_ROWS = [
+      ['driver', '單元配置'],
+      ['impedance', '阻抗'],
+      ['sensitivity', '靈敏度'],
+      ['connector', '頭端介面'],
+      ['price', '參考價格'],
+      ['material', '外殼']
+    ];
+
+    // ------------------------------------------------------------
+    // 程序化建模（規格 5.2）
+    // ------------------------------------------------------------
+    const MM = 0.1;
+    const DEG = Math.PI / 180;
+    let lowPowerMode = false;       // 掉幀時改用一般透明材質
+
+    function roundedPolygon(points, r) {
+      const shape = new THREE.Shape();
+      const n = points.length;
+      for (let i = 0; i < n; i++) {
+        const p = points[i];
+        const prev = points[(i - 1 + n) % n];
+        const next = points[(i + 1) % n];
+        const toPrev = prev.clone().sub(p);
+        const toNext = next.clone().sub(p);
+        const rr = Math.min(r, toPrev.length() / 2, toNext.length() / 2);
+        const a = p.clone().add(toPrev.normalize().multiplyScalar(rr));
+        const b = p.clone().add(toNext.normalize().multiplyScalar(rr));
+        if (i === 0) shape.moveTo(a.x, a.y); else shape.lineTo(a.x, a.y);
+        shape.quadraticCurveTo(p.x, p.y, b.x, b.y);
+      }
+      shape.closePath();
+      return shape;
+    }
+
+    function smoothShape(points, segments = 120) {
+      const curve = new THREE.CatmullRomCurve3(points.map(p => new THREE.Vector3(p.x, p.y, 0)), true, 'centripetal');
+      const pts = curve.getPoints(segments).map(v => new THREE.Vector2(v.x, v.y));
+      if (pts[0].distanceTo(pts[pts.length - 1]) < 1e-6) pts.pop();
+      return new THREE.Shape(pts);
+    }
+
+    // raw：[x, y]（任意單位）→ 縮放成 w × h mm 的外框並置中，回傳場景單位
+    function fitPoints(raw, w, h) {
+      const xs = raw.map(p => p[0]), ys = raw.map(p => p[1]);
+      const minX = Math.min(...xs), maxX = Math.max(...xs), minY = Math.min(...ys), maxY = Math.max(...ys);
+      const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2;
+      return raw.map(([x, y]) => new THREE.Vector2((x - cx) / (maxX - minX) * w * MM, (y - cy) / (maxY - minY) * h * MM));
+    }
+    const scalePoints = (pts, s) => pts.map(p => p.clone().multiplyScalar(s));
+
+    // 擠出並沿 Z 置中；外側面板朝 -Z，出音管朝 +Z
+    function extrude(shape, depth, bevel) {
+      const geo = new THREE.ExtrudeGeometry(shape, {
+        depth: depth * MM, bevelEnabled: true,
+        bevelThickness: bevel * MM, bevelSize: bevel * MM, bevelSegments: 8, curveSegments: 32
+      });
+      geo.translate(0, 0, -depth * MM / 2);
+      return geo;
+    }
+
+    function physical(params, role) {
+      const m = new THREE.MeshPhysicalMaterial(params);
+      if (role) m.userData.role = role;
+      if (params.transmission) {
+        m.userData.transmissive = true;
+        if (lowPowerMode) degradeMaterial(m);
+      }
+      return m;
+    }
+
+    function degradeMaterial(m) {
+      if (!m.userData.transmissive || m.userData.degraded) return;
+      m.transmission = 0;
+      m.transparent = true;
+      m.opacity = 0.6;
+      m.userData.base = { transparent: true, opacity: 0.6 };
+      m.userData.degraded = true;
+      m.needsUpdate = true;
+    }
+
+    function buildNozzle({ radius, length, mat, filterMat, lip = true }) {
+      const g = new THREE.Group();
+      const r = radius * MM, len = length * MM;
+      const tube = new THREE.Mesh(new THREE.CylinderGeometry(r, r * 1.04, len, 48, 1, true), mat);
+      tube.rotation.x = Math.PI / 2;
+      tube.position.z = len / 2;
+      g.add(tube);
+      if (lip) {
+        const torus = new THREE.Mesh(new THREE.TorusGeometry(r, 0.45 * MM, 16, 64), mat);
+        torus.position.z = len;
+        g.add(torus);
+      }
+      const filter = new THREE.Mesh(new THREE.CircleGeometry(r * 0.96, 40), filterMat);
+      filter.position.z = len - 0.6 * MM;
+      g.add(filter);
+      // 內側黑色底，避免看穿管壁
+      const back = new THREE.Mesh(new THREE.CircleGeometry(r, 40), filterMat);
+      back.position.z = 0.2 * MM;
+      g.add(back);
+      return g;
+    }
+
+    function buildDitaM2() {
+      const g = new THREE.Group();
+      // 外殼：圓角三角形，外框 20 × 16 mm、厚 10 mm（基底 16 × 12，bevel 2 mm）
+      const base = fitPoints([[-10, 6], [10, 7], [1, -9]], 16, 12);
+      const resin = physical({
+        color: 0xbfe3f2, metalness: 0, roughness: 0.05,
+        transmission: 0.95, ior: 1.5, thickness: 0.8,
+        clearcoat: 1, clearcoatRoughness: 0.05
+      }, 'shell');
+      const shell = new THREE.Mesh(extrude(roundedPolygon(base, 4.5 * MM), 6, 2), resin);
+      g.add(shell);
+
+      // 不鏽鋼內框：同輪廓內縮後挖空
+      const steel = physical({ color: 0xc9ccd1, metalness: 1, roughness: 0.3 });
+      const frameShape = roundedPolygon(scalePoints(base, 0.86), 3.6 * MM);
+      frameShape.holes.push(roundedPolygon(scalePoints(base, 0.58), 2.4 * MM));
+      const frame = new THREE.Mesh(extrude(frameShape, 5, 0.4), steel);
+      g.add(frame);
+      // 內框背板與兩顆螺絲，讓樹脂下的金屬結構更好辨認
+      const plate = new THREE.Mesh(extrude(roundedPolygon(scalePoints(base, 0.62), 2.4 * MM), 0.4, 0.2), steel);
+      plate.position.z = -2.4 * MM;
+      g.add(plate);
+      const screwGeo = new THREE.CylinderGeometry(0.6 * MM, 0.6 * MM, 0.6 * MM, 20);
+      for (const [x, y] of [[-4.2, 3.0], [4.6, 3.6]]) {
+        const s = new THREE.Mesh(screwGeo, steel);
+        s.rotation.x = Math.PI / 2;
+        s.position.set(x * MM, y * MM, -2.6 * MM);
+        g.add(s);
+      }
+
+      // 動圈單元：直徑 8.3 mm（官方數據），置於內框前端
+      const driverMat = physical({ color: 0x3a3d42, metalness: 0.85, roughness: 0.35 });
+      const driver = new THREE.Mesh(new THREE.CylinderGeometry(4.15 * MM, 4.15 * MM, 2 * MM, 48), driverMat);
+      driver.rotation.x = Math.PI / 2;
+      driver.position.set(1.6 * MM, 2.0 * MM, 1.6 * MM);
+      g.add(driver);
+      const ring = new THREE.Mesh(new THREE.TorusGeometry(3.4 * MM, 0.3 * MM, 12, 48), steel);
+      ring.position.set(1.6 * MM, 2.0 * MM, 2.65 * MM);
+      g.add(ring);
+
+      // 出音管：直徑 5.5 mm、長 6 mm、偏斜 30°
+      const nozzleMat = physical({ color: 0xd8dade, metalness: 1, roughness: 0.25, side: THREE.DoubleSide });
+      const filterMat = physical({ color: 0x0c0c0e, metalness: 0.2, roughness: 0.8, side: THREE.DoubleSide });
+      const nozzle = buildNozzle({ radius: 2.75, length: 6, mat: nozzleMat, filterMat });
+      nozzle.position.set(2.4 * MM, 2.4 * MM, 4.2 * MM);
+      nozzle.rotation.set(-14 * DEG, 30 * DEG, 0);
+      g.add(nozzle);
+
+      // 插座：嵌入外殼頂端
+      const socketMat = physical({ color: 0x111114, roughness: 0.2, transparent: true, opacity: 0.78 });
+      const socket = new THREE.Mesh(new THREE.BoxGeometry(5 * MM, 3 * MM, 3 * MM), socketMat);
+      socket.position.set(-4.0 * MM, 7.0 * MM, -1.4 * MM);
+      socket.rotation.z = 2.7 * DEG;
+      g.add(socket);
+      const gold = physical({ color: 0xc8a96e, metalness: 1, roughness: 0.3 });
+      const pinGeo = new THREE.CylinderGeometry(0.35 * MM, 0.35 * MM, 0.5 * MM, 12);
+      for (const dx of [-1.1, 1.1]) {
+        const pin = new THREE.Mesh(pinGeo, gold);
+        pin.position.set((-4.0 + dx) * MM, 8.6 * MM, -1.4 * MM);
+        g.add(pin);
+      }
+      return g;
+    }
+
+    function buildSonyIERM9() {
+      const g = new THREE.Group();
+      // 外殼：腎形，外框 24 × 18 mm、厚 12 mm（基底 18 × 12，bevel 3 mm）
+      const raw = [[-11, 1], [-10, 6], [-5, 9], [2, 9], [8, 7], [12, 2], [11, -4], [6, -8], [0, -8], [-4, -4.4], [-7, -4], [-10, -2.5]];
+      const base = fitPoints(raw, 18, 12);
+      const shellMat = physical({ color: 0x2b2b2e, metalness: 0.6, roughness: 0.45 }, 'shell');
+      const shell = new THREE.Mesh(extrude(smoothShape(base), 6, 3), shellMat);
+      g.add(shell);
+
+      // 面板：同輪廓 × 0.92，厚 1 mm，光澤較高
+      const faceMat = physical({ color: 0x2b2b2e, metalness: 0.6, roughness: 0.25, clearcoat: 0.6, clearcoatRoughness: 0.2 }, 'face');
+      const face = new THREE.Mesh(extrude(smoothShape(scalePoints(base, 0.92)), 0.2, 0.4), faceMat);
+      face.position.z = -6.3 * MM;
+      g.add(face);
+
+      // 出音管：直徑 6 mm、長 7 mm、偏斜 35°
+      const nozzleMat = physical({ color: 0x3c3d41, metalness: 0.9, roughness: 0.3, side: THREE.DoubleSide });
+      const filterMat = physical({ color: 0x08080a, metalness: 0.1, roughness: 0.85, side: THREE.DoubleSide });
+      const nozzle = buildNozzle({ radius: 3, length: 7, mat: nozzleMat, filterMat });
+      nozzle.position.set(3.6 * MM, 0.8 * MM, 4.8 * MM);
+      nozzle.rotation.set(-10 * DEG, 35 * DEG, 0);
+      g.add(nozzle);
+
+      // MMCX 插座：直徑 3 mm、高 2 mm，金色
+      const gold = physical({ color: 0xc8a96e, metalness: 1, roughness: 0.3 });
+      const mmcx = new THREE.Mesh(new THREE.CylinderGeometry(1.5 * MM, 1.5 * MM, 2 * MM, 32), gold);
+      const mx = -2.7, my = 8.9;
+      mmcx.position.set(mx * MM, my * MM, 0);
+      g.add(mmcx);
+      const hole = new THREE.Mesh(new THREE.CylinderGeometry(0.55 * MM, 0.55 * MM, 0.2 * MM, 16), physical({ color: 0x050505, roughness: 0.9 }));
+      hole.position.set(mx * MM, (my + 1.0) * MM, 0);
+      g.add(hole);
+
+      // 耳掛：從插座往上、繞向後方
+      const hookMat = physical({ color: 0x9a9ca0, metalness: 0, roughness: 0.3, transmission: 0.5, thickness: 0.15, ior: 1.45 }, 'hook');
+      const plug = new THREE.Mesh(new THREE.CylinderGeometry(1.7 * MM, 1.8 * MM, 4 * MM, 32), hookMat);
+      plug.position.set(mx * MM, (my + 3.0) * MM, 0);
+      g.add(plug);
+      const hookCurve = new THREE.CatmullRomCurve3([
+        [mx, my + 4.8, 0], [-3.0, 17, -0.4], [-7, 20.5, -1], [-12, 20.2, -1.5],
+        [-16.5, 16.5, -1.6], [-18.6, 10.5, -1.2], [-19.2, 3.5, -0.6]
+      ].map(([x, y, z]) => new THREE.Vector3(x * MM, y * MM, z * MM)));
+      g.add(new THREE.Mesh(new THREE.TubeGeometry(hookCurve, 96, 0.8 * MM, 16, false), hookMat));
+      // 耳掛內的導線，透過半透明外皮可見
+      const core = new THREE.Mesh(new THREE.TubeGeometry(hookCurve, 96, 0.3 * MM, 8, false), physical({ color: 0x6b5a3a, metalness: 0.7, roughness: 0.4 }));
+      g.add(core);
+      return g;
+    }
+
+    function hairlineTexture() {
+      const c = document.createElement('canvas');
+      c.width = 512; c.height = 16;
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = 'rgb(200,200,200)';
+      ctx.fillRect(0, 0, c.width, c.height);
+      for (let x = 0; x < c.width; x++) {
+        const v = 150 + Math.floor(Math.random() * 105);
+        ctx.fillStyle = `rgb(${v},${v},${v})`;
+        ctx.fillRect(x, 0, 1, c.height);
+      }
+      const tex = new THREE.CanvasTexture(c);
+      tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+      tex.repeat.set(3, 1);
+      return tex;
+    }
+
+    function buildAkgK3003() {
+      const outer = new THREE.Group();
+      const g = new THREE.Group();            // 以 Y 軸建模，再轉成出音管朝 +Z
+      g.rotation.x = Math.PI / 2;
+      outer.add(g);
+
+      // 主體：直徑 9 mm、長 22 mm，後端圓頭、前端收窄
+      const profile = [];
+      for (let i = 0; i <= 10; i++) {
+        const a = (i / 10) * Math.PI / 2;
+        profile.push(new THREE.Vector2(4.5 * Math.sin(a) * MM, 3.2 * (1 - Math.cos(a)) * MM));
+      }
+      [[4.5, 13], [4.42, 15.5], [4.1, 17.6], [3.5, 19.6], [2.95, 21.2], [2.7, 22]]
+        .forEach(([r, y]) => profile.push(new THREE.Vector2(r * MM, y * MM)));
+      const bodyGeo = new THREE.LatheGeometry(profile, 72);
+      bodyGeo.computeTangents();
+      const steel = physical({
+        color: 0xc9ccd1, metalness: 1, roughness: 0.4,
+        anisotropy: 0.6, roughnessMap: hairlineTexture()
+      }, 'body');
+      g.add(new THREE.Mesh(bodyGeo, steel));
+
+      // 調音濾網：直徑 5 mm、長 4 mm，兩道刻線
+      const filterSteel = physical({ color: 0xd9dbde, metalness: 1, roughness: 0.2 });
+      const filter = new THREE.Mesh(new THREE.CylinderGeometry(2.5 * MM, 2.5 * MM, 4 * MM, 40), filterSteel);
+      filter.position.y = 24 * MM;
+      g.add(filter);
+      const grooveMat = physical({ color: 0x55585e, metalness: 1, roughness: 0.5 });
+      for (const y of [23.0, 24.3]) {
+        const groove = new THREE.Mesh(new THREE.TorusGeometry(2.5 * MM, 0.16 * MM, 8, 48), grooveMat);
+        groove.rotation.x = Math.PI / 2;
+        groove.position.y = y * MM;
+        g.add(groove);
+      }
+
+      // 耳塞：蘑菇形，直徑 11 mm、長 7 mm
+      const tipProfile = [new THREE.Vector2(2.6 * MM, 24.0 * MM), new THREE.Vector2(4.6 * MM, 24.0 * MM), new THREE.Vector2(5.3 * MM, 24.25 * MM)];
+      for (let i = 0; i <= 16; i++) {
+        const t = i / 16;
+        tipProfile.push(new THREE.Vector2((2.6 + 2.9 * Math.cos(t * Math.PI / 2)) * MM, (24.6 + 6.4 * t) * MM));
+      }
+      tipProfile.push(new THREE.Vector2(2.35 * MM, 31 * MM), new THREE.Vector2(2.35 * MM, 26.2 * MM));
+      const silicone = physical({
+        color: 0x8e9196, metalness: 0, roughness: 0.8,
+        transmission: 0.3, thickness: 0.2, ior: 1.4, side: THREE.DoubleSide
+      }, 'tip');
+      g.add(new THREE.Mesh(new THREE.LatheGeometry(tipProfile, 64), silicone));
+
+      // 尾端抗拉：錐形 3 → 2 mm，長 6 mm
+      const rubber = physical({ color: 0x1b1b1d, metalness: 0, roughness: 0.9 });
+      const relief = new THREE.Mesh(new THREE.CylinderGeometry(1.5 * MM, 1.0 * MM, 6 * MM, 32), rubber);
+      relief.position.y = -2.4 * MM;
+      g.add(relief);
+
+      // 線材：往下垂（局部 +Z 轉換後即為世界 -Y）
+      const cable = new THREE.CatmullRomCurve3([
+        [0, -5.2, 0], [0, -8.4, 0.6], [0, -10.6, 3.2], [0, -11.8, 7.5], [0, -12.2, 15], [0, -12.1, 24], [0, -11.9, 31]
+      ].map(([x, y, z]) => new THREE.Vector3(x * MM, y * MM, z * MM)));
+      g.add(new THREE.Mesh(new THREE.TubeGeometry(cable, 80, 1 * MM, 14, false), rubber));
+      return outer;
+    }
+
+    const BUILDERS = {
+      'dita-project-m2': buildDitaM2,
+      'sony-ier-m9': buildSonyIERM9,
+      'akg-k3003': buildAkgK3003
+    };
+
+    // ============================================================
+    // DOM 參照與共用狀態
+    // ============================================================
+    const $ = sel => document.querySelector(sel);
+    const els = {
+      list: $('#model-list'),
+      viewer: $('#viewer'),
+      canvas: $('#scene'),
+      loader: $('#loader'),
+      loaderPct: $('#loader .pct'),
+      loaderLabel: $('#loader .label'),
+      loaderBar: $('#loader .bar i'),
+      error: $('#error'),
+      hint: $('#hint'),
+      spec: $('#spec-panel'),
+      controls: $('#controls'),
+      reset: $('#reset-btn'),
+      auto: $('#autorotate-btn'),
+      pinsBtn: $('#pins-btn')
+    };
+
+    const reducedMQ = matchMedia('(prefers-reduced-motion: reduce)');
+    const lightMQ = matchMedia('(prefers-color-scheme: light)');
+    let reducedMotion = reducedMQ.matches;
+    let userAutoRotate = !reducedMotion;
+
+    const state = {
+      currentId: IEM_DATA[0].id,
+      currentPivot: null,
+      variantIndex: new Map(),     // id → 目前配色索引
+      switchToken: 0
+    };
+    const cache = new Map();       // id → 已建立的模型（pivot group）
+
+    let renderer, scene, camera, controls, stage, shadow, envTexture;
+    let webglOK = true;
+
+    // ============================================================
+    // 3. initScene()
+    // ============================================================
+    function webglAvailable() {
+      try {
+        const c = document.createElement('canvas');
+        return !!(window.WebGLRenderingContext && (c.getContext('webgl2') || c.getContext('webgl')));
+      } catch { return false; }
+    }
+
+    function cssVar(name) {
+      return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    }
+
+    function initScene() {
+      renderer = new THREE.WebGLRenderer({ canvas: els.canvas, antialias: true, powerPreference: 'high-performance' });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.0;
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+      scene = new THREE.Scene();
+      camera = new THREE.PerspectiveCamera(35, 1, 0.05, 50);
+
+      const pmrem = new THREE.PMREMGenerator(renderer);
+      envTexture = pmrem.fromScene(new RoomEnvironment(renderer), 0.04).texture;
+      scene.environment = envTexture;
+      pmrem.dispose();
+
+      const key = new THREE.DirectionalLight(0xffffff, 1.2);
+      key.position.set(2.5, 2.5, 1.2);   // 右上 45°
+      scene.add(key);
+
+      stage = new THREE.Group();
+      scene.add(stage);
+
+      // 柔和圓形接觸陰影
+      const c = document.createElement('canvas');
+      c.width = c.height = 256;
+      const ctx = c.getContext('2d');
+      const grad = ctx.createRadialGradient(128, 128, 0, 128, 128, 128);
+      grad.addColorStop(0, 'rgba(0,0,0,1)');
+      grad.addColorStop(0.45, 'rgba(0,0,0,0.45)');
+      grad.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 256, 256);
+      const shadowTex = new THREE.CanvasTexture(c);
+      shadow = new THREE.Mesh(
+        new THREE.PlaneGeometry(1, 1),
+        new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, depthWrite: false, toneMapped: false })
+      );
+      shadow.rotation.x = -Math.PI / 2;
+      shadow.renderOrder = -1;
+      scene.add(shadow);
+
+      applyTheme();
+      lightMQ.addEventListener('change', applyTheme);
+    }
+
+    function applyTheme() {
+      if (!scene) return;
+      scene.background = new THREE.Color(cssVar('--bg') || '#0e0f12');
+      shadow.material.userData.baseOpacity = parseFloat(cssVar('--shadow-alpha')) || 0.5;
+      shadow.material.opacity = shadow.material.userData.baseOpacity;
+    }
+
+    // ============================================================
+    // 4. initControls()
+    // ============================================================
+    const MODEL_SIZE = 1;               // loadModel 會把最長邊縮放到 1
+
+    function initControls() {
+      controls = new OrbitControls(camera, els.canvas);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.08;
+      controls.enablePan = false;
+      controls.minPolarAngle = 10 * DEG;
+      controls.maxPolarAngle = 170 * DEG;
+      controls.minDistance = 1.5 * MODEL_SIZE;
+      controls.maxDistance = 4 * MODEL_SIZE;
+      controls.rotateSpeed = 0.9;
+      controls.zoomSpeed = 0.8;
+      controls.autoRotate = userAutoRotate;
+      controls.autoRotateSpeed = 1.5;
+
+      const p = DATA_BY_ID.get(state.currentId).viewPresets.front;
+      camera.position.set(...p).multiplyScalar(PRESET_SCALE);
+      controls.target.set(0, 0, 0);
+      controls.update();
+
+      controls.addEventListener('start', () => {
+        cancelCameraTween();
+        pauseAutoRotate();
+      });
+      controls.addEventListener('end', scheduleAutoRotate);
+
+      els.canvas.addEventListener('pointerdown', () => {
+        els.canvas.classList.add('dragging');
+        hideHint();
+      });
+      const up = () => els.canvas.classList.remove('dragging');
+      els.canvas.addEventListener('pointerup', up);
+      els.canvas.addEventListener('pointercancel', up);
+      els.canvas.addEventListener('pointerleave', up);
+    }
+
+    let idleTimer = null;
+    function pauseAutoRotate() {
+      clearTimeout(idleTimer);
+      if (controls) controls.autoRotate = false;
+    }
+    function scheduleAutoRotate() {
+      clearTimeout(idleTimer);
+      if (!userAutoRotate || reducedMotion) return;
+      idleTimer = setTimeout(() => {
+        if (userAutoRotate && !reducedMotion && !cameraTween) controls.autoRotate = true;
+      }, 5000);
+    }
+    function setUserAutoRotate(on) {
+      userAutoRotate = on;
+      els.auto.setAttribute('aria-pressed', String(on));
+      clearTimeout(idleTimer);
+      if (controls) controls.autoRotate = on && !reducedMotion;
+    }
+
+    let hintHidden = false;
+    function hideHint() {
+      if (hintHidden) return;
+      hintHidden = true;
+      els.hint.classList.add('hidden');
+    }
+
+    // ------------------------------------------------------------
+    // 補間工具
+    // ------------------------------------------------------------
+    const tweens = new Set();
+    const easeInOut = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    const easeOut = t => 1 - Math.pow(1 - t, 3);
+
+    function tween(duration, onUpdate, ease = easeInOut) {
+      return new Promise(resolve => {
+        if (reducedMotion || duration <= 0) { onUpdate(1); resolve(); return; }
+        const tw = { start: performance.now(), duration, onUpdate, ease, resolve, cancelled: false };
+        tweens.add(tw);
+      });
+    }
+    function stepTweens(now) {
+      for (const tw of tweens) {
+        if (tw.cancelled) { tweens.delete(tw); tw.resolve(); continue; }
+        const t = Math.min(1, (now - tw.start) / tw.duration);
+        tw.onUpdate(tw.ease(t));
+        if (t >= 1) { tweens.delete(tw); tw.resolve(); }
+      }
+    }
+
+    // focusCamera：以球座標插值移動 camera 與 target（重置、快速視角、鍵盤共用）
+    let cameraTween = null;
+    function cancelCameraTween() {
+      if (cameraTween) { cameraTween.cancelled = true; cameraTween = null; }
+    }
+    function moveCamera(toPos, toTarget = new THREE.Vector3(), duration = 600) {
+      cancelCameraTween();
+      pauseAutoRotate();
+      const fromTarget = controls.target.clone();
+      const from = new THREE.Spherical().setFromVector3(camera.position.clone().sub(fromTarget));
+      const to = new THREE.Spherical().setFromVector3(toPos.clone().sub(toTarget));
+      to.radius = THREE.MathUtils.clamp(to.radius, controls.minDistance, controls.maxDistance);
+      to.phi = THREE.MathUtils.clamp(to.phi, controls.minPolarAngle, controls.maxPolarAngle);
+      let dTheta = to.theta - from.theta;
+      dTheta = Math.atan2(Math.sin(dTheta), Math.cos(dTheta));   // 走最短路徑
+
+      const token = {};
+      cameraTween = token;
+      const s = new THREE.Spherical();
+      const apply = e => {
+        if (token.cancelled) return;
+        controls.target.lerpVectors(fromTarget, toTarget, e);
+        s.set(
+          THREE.MathUtils.lerp(from.radius, to.radius, e),
+          THREE.MathUtils.lerp(from.phi, to.phi, e),
+          from.theta + dTheta * e
+        );
+        camera.position.setFromSpherical(s).add(controls.target);
+        camera.lookAt(controls.target);
+      };
+      return tween(duration, apply).then(() => {
+        if (cameraTween === token) cameraTween = null;
+        if (!token.cancelled) scheduleAutoRotate();
+      });
+    }
+    const PRESET_SCALE = 1.22;          // 預設視角距離微調，讓模型四周留白
+    function focusCamera(presetName, duration = 600) {
+      const item = DATA_BY_ID.get(state.currentId);
+      const p = item.viewPresets[presetName] || item.viewPresets.front;
+      return moveCamera(new THREE.Vector3(...p).multiplyScalar(PRESET_SCALE), new THREE.Vector3(), duration);
+    }
+
+    function orbitBy(dTheta, dPhi) {
+      const offset = camera.position.clone().sub(controls.target);
+      const s = new THREE.Spherical().setFromVector3(offset);
+      s.theta += dTheta;
+      s.phi = THREE.MathUtils.clamp(s.phi + dPhi, controls.minPolarAngle, controls.maxPolarAngle);
+      const pos = new THREE.Vector3().setFromSpherical(s).add(controls.target);
+      moveCamera(pos, controls.target.clone(), 260);
+    }
+    function zoomBy(factor) {
+      const offset = camera.position.clone().sub(controls.target);
+      const d = THREE.MathUtils.clamp(offset.length() * factor, controls.minDistance, controls.maxDistance);
+      offset.setLength(d);
+      moveCamera(offset.add(controls.target), controls.target.clone(), 260);
+    }
+
+    // ============================================================
+    // 5. loadModel(id)：快取 + 自動置中縮放（程序化建模；日後可換成 GLTFLoader）
+    // ============================================================
+    const nextFrame = () => new Promise(r => requestAnimationFrame(() => r()));
+
+    function showLoader(pct, label) {
+      els.loader.hidden = false;
+      els.loaderPct.textContent = `${Math.round(pct)}%`;
+      els.loaderBar.style.width = `${pct}%`;
+      if (label) els.loaderLabel.textContent = label;
+    }
+    function hideLoader() { els.loader.hidden = true; }
+
+    async function loadModel(id) {
+      if (cache.has(id)) return cache.get(id);
+      const item = DATA_BY_ID.get(id);
+      showLoader(5, `正在建立 ${item.name} 模型`);
+      await nextFrame();
+
+      const builder = BUILDERS[item.builder];
+      if (!builder) throw new Error(`找不到「${item.builder}」的模型建構程式`);
+      showLoader(20);
+      await nextFrame();
+
+      const model = builder();
+      showLoader(60);
+      await nextFrame();
+
+      // 以 Box3 計算邊界：置中、最長邊縮放為 1
+      const box = new THREE.Box3().setFromObject(model);
+      const size = box.getSize(new THREE.Vector3());
+      const center = box.getCenter(new THREE.Vector3());
+      model.position.sub(center);
+      const pivot = new THREE.Group();
+      pivot.add(model);
+      const s = MODEL_SIZE / Math.max(size.x, size.y, size.z);
+      pivot.scale.setScalar(s);
+      pivot.userData.baseScale = s;
+      pivot.userData.size = size.clone().multiplyScalar(s);
+      pivot.userData.id = id;
+
+      applyVariant(pivot, item.variants[state.variantIndex.get(id) ?? 0]);
+
+      showLoader(80, '編譯材質');
+      try {
+        if (renderer.compileAsync) await renderer.compileAsync(pivot, camera, scene);
+        else renderer.compile(pivot, camera);
+      } catch { /* 編譯失敗時交給第一次渲染處理 */ }
+      showLoader(100);
+      await nextFrame();
+
+      cache.set(id, pivot);
+      hideLoader();
+      return pivot;
+    }
+
+    function setGroupOpacity(group, a) {
+      group.traverse(o => {
+        if (!o.isMesh) return;
+        const mats = Array.isArray(o.material) ? o.material : [o.material];
+        for (const m of mats) {
+          if (!m.userData.base) m.userData.base = { transparent: m.transparent, opacity: m.opacity };
+          const wantTransparent = a < 1 || m.userData.base.transparent;
+          if (m.transparent !== wantTransparent) { m.transparent = wantTransparent; m.needsUpdate = true; }
+          m.opacity = m.userData.base.opacity * a;
+        }
+      });
+    }
+
+    function applyVariant(pivot, variant) {
+      if (!variant) return;
+      pivot.traverse(o => {
+        if (!o.isMesh) return;
+        const role = o.material.userData.role;
+        if (role && variant.colors[role]) o.material.color.set(variant.colors[role]);
+      });
+    }
+
+    function placeShadow(pivot) {
+      const sz = pivot.userData.size;
+      shadow.position.set(0, -sz.y / 2 - 0.03, 0);
+      const span = Math.max(sz.x, sz.z) * 1.25 + 0.15;
+      shadow.scale.set(span, span, 1);
+    }
+
+    async function showModel(id) {
+      const item = DATA_BY_ID.get(id);
+      if (!item) return;
+      const token = ++state.switchToken;
+      state.currentId = id;
+
+      updateChrome(item);
+      hideError();
+      if (!webglOK) { showWebGLFallback(item); return; }
+
+      const old = state.currentPivot;
+      let outDone = Promise.resolve();
+      if (old && old.userData.id !== id) {
+        const base = old.userData.baseScale;
+        outDone = tween(300, e => {
+          old.scale.setScalar(base * (1 - 0.3 * e));
+          setGroupOpacity(old, 1 - e);
+          shadow.material.opacity = shadow.material.userData.baseOpacity * (1 - e);
+        }, easeOut).then(() => {
+          stage.remove(old);
+          old.scale.setScalar(base);
+          setGroupOpacity(old, 1);
+        });
+      }
+
+      let pivot;
+      try {
+        pivot = await loadModel(id);
+      } catch (err) {
+        console.error(err);
+        hideLoader();
+        await outDone;
+        if (token !== state.switchToken) return;
+        if (state.currentPivot === old) state.currentPivot = null;
+        showError({
+          title: `${item.name} 模型沒有載入`,
+          text: String(err.message || err),
+          action: '重試',
+          onAction: () => showModel(id)
+        });
+        return;
+      }
+      await outDone;
+      if (token !== state.switchToken) return;
+      if (old === pivot) return;
+
+      for (const child of [...stage.children]) stage.remove(child);
+      stage.add(pivot);
+      state.currentPivot = pivot;
+      placeShadow(pivot);
+
+      const base = pivot.userData.baseScale;
+      tween(400, e => {
+        pivot.scale.setScalar(base * (0.7 + 0.3 * e));
+        setGroupOpacity(pivot, e);
+        shadow.material.opacity = shadow.material.userData.baseOpacity * e;
+      }, easeOut);
+
+      focusCamera('front', 600);
+    }
+
+    // ============================================================
+    // 6. renderList() / renderSpecs(item)
+    // ============================================================
+    function renderList() {
+      const title = document.createElement('h2');
+      title.className = 'list-title';
+      title.textContent = '選擇型號';
+      els.list.append(title);
+      IEM_DATA.forEach((item, i) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'model-card';
+        btn.dataset.id = item.id;
+        btn.style.setProperty('--card-accent', item.accent);
+        btn.setAttribute('aria-pressed', 'false');
+        btn.innerHTML = `
+          <span class="m-brand"></span>
+          ${i < 9 ? `<kbd aria-hidden="true">${i + 1}</kbd>` : ''}
+          <span class="m-name"></span>
+          <span class="m-arch"></span>`;
+        btn.querySelector('.m-brand').textContent = item.brand;
+        btn.querySelector('.m-name').textContent = item.name;
+        btn.querySelector('.m-arch').textContent = item.arch;
+        btn.addEventListener('click', () => { if (item.id !== state.currentId || !state.currentPivot) showModel(item.id); });
+        els.list.append(btn);
+      });
+    }
+
+    function renderSpecs(item) {
+      const inner = document.createElement('div');
+      inner.className = 'spec-inner';
+      inner.innerHTML = `
+        <p class="spec-brand"></p>
+        <h2 class="spec-name"></h2>
+        <p class="spec-desc"></p>
+        <dl class="specs"></dl>
+        <div class="variants">
+          <h3>面板配色</h3>
+          <div class="swatches" role="group" aria-label="面板配色"></div>
+        </div>
+        <p class="spec-note">3D 模型依產品照片製作，為比例與材質的風格化示意，尺寸非官方數據。標示「示意」的配色並非原廠款式。</p>
+        <a class="spec-source" target="_blank" rel="noopener">查看產品頁面</a>`;
+      inner.querySelector('.spec-brand').textContent = item.brand;
+      inner.querySelector('.spec-name').textContent = item.name;
+      inner.querySelector('.spec-desc').textContent = item.description;
+      inner.querySelector('.spec-source').href = item.source;
+
+      const dl = inner.querySelector('.specs');
+      for (const [key, label] of SPEC_ROWS) {
+        const value = item.specs[key];
+        if (value == null) continue;
+        const dt = document.createElement('dt');
+        dt.textContent = label;
+        const dd = document.createElement('dd');
+        dd.textContent = value;
+        if (value === PENDING) dd.classList.add('pending');
+        dl.append(dt, dd);
+      }
+
+      const sw = inner.querySelector('.swatches');
+      const active = state.variantIndex.get(item.id) ?? 0;
+      item.variants.forEach((v, i) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'swatch';
+        b.setAttribute('aria-pressed', String(i === active));
+        const color = Object.values(v.colors).at(-1);
+        b.style.setProperty('--sw', color);
+        b.innerHTML = '<i aria-hidden="true"></i><span></span>';
+        b.querySelector('span').textContent = v.label;
+        b.addEventListener('click', () => {
+          state.variantIndex.set(item.id, i);
+          sw.querySelectorAll('.swatch').forEach((x, j) => x.setAttribute('aria-pressed', String(j === i)));
+          const pivot = cache.get(item.id);
+          if (pivot) applyVariant(pivot, v);
+          if (!webglOK) showWebGLFallback(item);
+        });
+        sw.append(b);
+      });
+
+      els.spec.replaceChildren(inner);
+    }
+
+    function updateChrome(item) {
+      document.documentElement.style.setProperty('--accent', item.accent);
+      els.list.querySelectorAll('.model-card').forEach(c => {
+        const on = c.dataset.id === item.id;
+        c.setAttribute('aria-pressed', String(on));
+        if (on && els.list.scrollWidth > els.list.clientWidth) {
+          c.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'nearest', inline: 'nearest' });
+        }
+      });
+      els.canvas.setAttribute('aria-label', `${item.brand} ${item.name} 的 3D 模型，可拖曳旋轉`);
+      els.pinsBtn.textContent = item.pinsLabel || '插針';
+      renderSpecs(item);
+      document.title = `${item.brand} ${item.name}｜IEM 360° Showcase`;
+    }
+
+    // ------------------------------------------------------------
+    // 錯誤與 WebGL 降級畫面
+    // ------------------------------------------------------------
+    function showError({ title, text, action, onAction, art = '' }) {
+      els.error.querySelector('.error-art').innerHTML = art;
+      els.error.querySelector('.error-title').textContent = title;
+      els.error.querySelector('.error-text').textContent = text;
+      const btn = els.error.querySelector('.error-action');
+      btn.hidden = !action;
+      btn.textContent = action || '';
+      btn.onclick = onAction || null;
+      els.error.hidden = false;
+    }
+    function hideError() { els.error.hidden = true; }
+
+    function staticArt(item) {
+      const v = item.variants[state.variantIndex.get(item.id) ?? 0];
+      const c = Object.values(v.colors).at(-1);
+      const stroke = 'currentColor';
+      const shapes = {
+        'dita-project-m2': `<path d="M40 40 Q20 42 26 62 L70 112 Q82 124 92 110 L136 54 Q146 36 124 34 Z" fill="${c}" fill-opacity=".55" stroke="${stroke}" stroke-opacity=".4"/>
+          <path d="M52 50 L120 46 L88 98 Z" fill="none" stroke="#c9ccd1" stroke-width="3" stroke-linejoin="round"/>
+          <rect x="96" y="66" width="34" height="18" rx="6" transform="rotate(-25 96 66)" fill="#d8dade"/>`,
+        'sony-ier-m9': `<path d="M30 70 Q28 36 70 34 Q120 32 136 56 Q150 82 128 104 Q100 124 76 108 Q64 98 50 102 Q30 104 30 70Z" fill="${c}" stroke="${stroke}" stroke-opacity=".4"/>
+          <path d="M66 34 Q64 10 40 12 Q18 16 16 50 L16 74" fill="none" stroke="#9a9ca0" stroke-width="4" stroke-linecap="round"/>
+          <circle cx="66" cy="36" r="5" fill="#c8a96e"/>`,
+        'akg-k3003': `<rect x="30" y="56" width="92" height="34" rx="17" fill="${c}" stroke="${stroke}" stroke-opacity=".4"/>
+          <rect x="120" y="62" width="16" height="22" rx="4" fill="#d9dbde"/>
+          <path d="M134 56 Q160 58 160 73 Q160 88 134 90 Z" fill="#8e9196"/>
+          <path d="M30 73 Q10 74 10 100 L10 128" fill="none" stroke="#1b1b1d" stroke-width="4" stroke-linecap="round"/>`
+      };
+      return `<svg viewBox="0 0 170 140" role="img" aria-label="${item.name} 示意圖">${shapes[item.builder] || ''}</svg>`;
+    }
+
+    function showWebGLFallback(item) {
+      hideLoader();
+      els.controls.hidden = true;
+      els.hint.hidden = true;
+      showError({
+        title: '這個瀏覽器無法顯示 3D 模型',
+        text: '目前的瀏覽器或裝置沒有開啟 WebGL，所以改顯示靜態示意圖。請改用最新版 Chrome、Edge、Safari 或 Firefox，或在設定中開啟硬體加速。',
+        art: staticArt(item)
+      });
+    }
+
+    // ============================================================
+    // 7. bindUI()：按鈕、鍵盤、自轉開關
+    // ============================================================
+    function bindUI() {
+      els.controls.querySelectorAll('[data-view]').forEach(btn => {
+        btn.addEventListener('click', () => focusCamera(btn.dataset.view));
+      });
+      els.reset.addEventListener('click', () => focusCamera('front'));
+      els.auto.addEventListener('click', () => setUserAutoRotate(els.auto.getAttribute('aria-pressed') !== 'true'));
+
+      window.addEventListener('keydown', e => {
+        if (e.metaKey || e.ctrlKey || e.altKey) return;
+        if (e.target.closest && e.target.closest('input, textarea, select, [contenteditable]')) return;
+        if (!webglOK && !/^[1-9]$/.test(e.key)) return;
+        const step = 15 * DEG;
+        let handled = true;
+        switch (e.key) {
+          case 'ArrowLeft':  orbitBy(-step, 0); break;
+          case 'ArrowRight': orbitBy(step, 0); break;
+          case 'ArrowUp':    orbitBy(0, -step); break;
+          case 'ArrowDown':  orbitBy(0, step); break;
+          case '+': case '=': zoomBy(0.85); break;
+          case '-': case '_': zoomBy(1 / 0.85); break;
+          case 'r': case 'R': focusCamera('front'); break;
+          default:
+            if (/^[1-9]$/.test(e.key)) {
+              const item = IEM_DATA[Number(e.key) - 1];
+              if (item && (item.id !== state.currentId || !state.currentPivot)) showModel(item.id);
+              else if (!item) handled = false;
+            } else handled = false;
+        }
+        if (handled) { e.preventDefault(); hideHint(); }
+      });
+
+      reducedMQ.addEventListener('change', () => {
+        reducedMotion = reducedMQ.matches;
+        if (reducedMotion) { pauseAutoRotate(); setUserAutoRotate(false); }
+      });
+    }
+
+    // ============================================================
+    // 8. onResize() / animate()
+    // ============================================================
+    function onResize() {
+      const w = els.viewer.clientWidth, h = els.viewer.clientHeight;
+      if (!w || !h) return;
+      renderer.setSize(w, h, false);
+      camera.aspect = w / h;
+      // 直式畫面時保持水平視角，避免模型被裁切
+      camera.fov = camera.aspect < 1
+        ? Math.min(60, 2 * Math.atan(Math.tan(17.5 * DEG) / camera.aspect) / DEG)
+        : 35;
+      camera.updateProjectionMatrix();
+    }
+
+    // 掉幀偵測：持續低於 40 fps 時，把 transmission 材質降級為一般透明
+    const perf = { frames: 0, since: performance.now(), lowSeconds: 0, warmup: 0 };
+    function monitorPerf(now) {
+      if (lowPowerMode) return;
+      perf.frames++;
+      const elapsed = now - perf.since;
+      if (elapsed < 1000) return;
+      const fps = perf.frames * 1000 / elapsed;
+      perf.frames = 0;
+      perf.since = now;
+      if (++perf.warmup < 3 || !els.loader.hidden) return;
+      perf.lowSeconds = fps < 40 ? perf.lowSeconds + 1 : 0;
+      if (perf.lowSeconds >= 3) {
+        lowPowerMode = true;
+        cache.forEach(p => p.traverse(o => { if (o.isMesh) degradeMaterial(o.material); }));
+        console.info('IEM showcase: 偵測到掉幀，已改用輕量透明材質。');
+      }
+    }
+
+    function animate(now) {
+      stepTweens(now);
+      if (!cameraTween) controls.update();
+      renderer.render(scene, camera);
+      monitorPerf(now);
+    }
+
+    function startLoop() { renderer.setAnimationLoop(animate); }
+    function stopLoop() { renderer.setAnimationLoop(null); }
+
+    function disposeObject(root) {
+      root.traverse(o => {
+        if (o.geometry) o.geometry.dispose();
+        const mats = o.material ? (Array.isArray(o.material) ? o.material : [o.material]) : [];
+        for (const m of mats) {
+          for (const k in m) { const v = m[k]; if (v && v.isTexture) v.dispose(); }
+          m.dispose();
+        }
+      });
+    }
+
+    // ============================================================
+    // 啟動
+    // ============================================================
+    renderList();
+    bindUI();
+
+    webglOK = webglAvailable();
+    if (webglOK) {
+      try {
+        initScene();
+        initControls();
+      } catch (err) {
+        console.error(err);
+        webglOK = false;
+      }
+    }
+
+    if (!webglOK) {
+      showModel(state.currentId);
+    } else {
+      setUserAutoRotate(userAutoRotate);
+      new ResizeObserver(onResize).observe(els.viewer);
+      onResize();
+      startLoop();
+
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) stopLoop();
+        else { perf.since = performance.now(); perf.frames = 0; startLoop(); }
+      });
+
+      window.addEventListener('pagehide', e => {
+        if (e.persisted) return;
+        stopLoop();
+        cache.forEach(disposeObject);
+        cache.clear();
+        disposeObject(shadow);
+        envTexture?.dispose();
+        controls.dispose();
+        renderer.dispose();
+      });
+
+      els.canvas.addEventListener('webglcontextlost', e => {
+        e.preventDefault();
+        stopLoop();
+        showError({
+          title: '3D 顯示中斷',
+          text: '顯示卡資源被系統回收。重新整理即可恢復。',
+          action: '重新整理',
+          onAction: () => location.reload()
+        });
+      });
+
+      showModel(state.currentId);
+    }
+  </script>
+</body>
+</html>
